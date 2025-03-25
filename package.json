@@ -29,6 +29,7 @@
     "nginx": "^1.0.8",
     "node": "^23.9.0",
     "response-time": "^2.3.3",
+    "tsc": "^2.0.4",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
