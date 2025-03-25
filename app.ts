@@ -1,67 +1,66 @@
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import { Request, Response } from "express";
-import { MongoDbConnection } from "./config/MongoDbConnection";
 import cookieParser from "cookie-parser";
-import bodyParser from 'body-parser';
-// import admin from 'firebase-admin';
+import bodyParser from "body-parser";
+import responseTime from "response-time";
+
+import { MongoDbConnection } from "./config/MongoDbConnection";
 import { router } from "./routes/UserRoutes";
 import { LimitRouter } from "./routes/LimitRoutes";
 
-// OTHER NPM LIB help ful for limit !
-import responseTime from 'response-time'
-import { limiter } from "./rateLimiter";
-
-// express code apply it so we get
-const app = express();
 dotenv.config();
+const app = express();
 const port = process.env.RDS_HOSTNAME || 3000;
 
-// mount 
-app.use(express.json()); //server rendering - middleware
-app.use(cookieParser()); // Use cookie-parser middleware
+// Middleware
+app.use(express.json());
+app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(responseTime((req,res,time)=>{
-  console.log(`Request to ${req.method} ${req.url} took ${time.toFixed(2)}ms`);
-}));
-app.use(limiter);
 
+// Response Time Logger
+app.use(
+  responseTime((req: Request, res: Response, time: number) => {
+    console.log(`Request to ${req.method} ${req.url} took ${time.toFixed(2)}ms`);
+  })
+);
 
-// allow origin 
+// CORS Configuration
 const allowOrigin = [
-    "chrome-extension://fmjgimepnoffjjongiedkgbanfnhobkk",
-    "https://code-analyzer-login-auth.vercel.app","*"
-]
+  "chrome-extension://fmjgimepnoffjjongiedkgbanfnhobkk",
+  "https://code-analyzer-login-auth.vercel.app",
+  "*",
+];
 
-// Cors 
-app.use(cors({
-  origin: allowOrigin,
-  credentials: true, // Important for cookies
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(
+  cors({
+    origin: allowOrigin,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
-
-//User-Routes 
+// Routes
 app.use("/user", router);
-//Limit-Routes
-app.use('/bot' ,LimitRouter);
+app.use("/bot", LimitRouter);
 
-
-
-//  routes
-app.get("/", (req,res) => {
+app.get("/", (req: Request, res: Response) => {
   res.send("Hello World!");
 });
+
+// Start Server
 const start = async () => {
-  await MongoDbConnection(process.env.RDS_MONGODB_URI!);
-  console.log("db connected");
-  app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-  });
+  try {
+    await MongoDbConnection(process.env.RDS_MONGODB_URI!);
+    console.log("DB connected");
+    app.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
+    });
+  } catch (error) {
+    console.error("Failed to connect to database:", error);
+  }
 };
+
 start();
-
-
