@@ -10,31 +10,35 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read # Required for actions/checkout
+      contents: read
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Set up Node.js and pnpm
-      - name: Set up Node.js and pnpm
-        uses: actions/setup-node@v3
+      # Use pnpm setup action instead of manual installation
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: latest
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '22.x'
           cache: 'pnpm'
 
-      - name: Install pnpm
-        run: npm install -g pnpm
-
       - name: Verify pnpm installation
         run: pnpm --version
 
-      # Install dependencies, build, and test using pnpm
-      - name: Install dependencies, build, and test
-        run: |
-          pnpm install --frozen-lockfile
-          pnpm run build --if-present
-          pnpm run test --if-present
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build project
+        run: pnpm run build --if-present
+
+      - name: Run tests
+        run: pnpm run test --if-present
 
       # Package the app for deployment
       - name: Zip artifact for deployment
@@ -53,8 +57,8 @@ jobs:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write # Required for JWT
-      contents: read # Required for actions/checkout
+      id-token: write
+      contents: read
 
     steps:
       - name: Download artifact from build job
@@ -65,7 +69,6 @@ jobs:
       - name: Unzip artifact
         run: unzip release.zip
 
-      # Authenticate with Azure
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -73,7 +76,6 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_FB6E7839CB5F478EBA6BF29165373211 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_244ADC77EC2A41C9AB5642D787055EB0 }}
 
-      # Deploy to Azure Web App
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
