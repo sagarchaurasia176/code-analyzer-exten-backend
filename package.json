@@ -1,12 +1,12 @@
 {
   "name": "Code-extension-Backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "app.ts",
+  "description": "codeextension backend",
+  "main": "app.js",
   "scripts": {
     "start": "ts-node app.ts",
     "dev": "nodemon app.ts",
-    "build": "tsc"
+    "build": "tsc -b"
   },  
   "keywords": [],
   "author": "",
