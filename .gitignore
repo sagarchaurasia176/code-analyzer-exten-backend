@@ -2,3 +2,14 @@ node_moudles/
 code-analyzer-extension-firebase-adminsdk-fbsvc-64a3913e61.json
 server.json
 FirebaseCredientials.json
+Dockerfile
+Dockerfile.dev
+docker-compose.yml
+docker-compose.override.yml
+.vscode/
+.vscode/launch.json
+.vscode/tasks.json
+.vscode/settings.json
+.vscode/extensions.json
+.vscode/typings.json
+.vscode/typings/
